@@ -83,19 +83,14 @@
     <script>
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', function() {
-          navigator.serviceWorker.register('/sw.js', { scope: '/' })
+          navigator.serviceWorker.register('/sw.js')
             .then(function(registration) {
               console.log('ServiceWorker registration successful with scope: ', registration.scope);
-              console.log('ServiceWorker active: ', registration.active);
-              console.log('ServiceWorker installing: ', registration.installing);
-              console.log('ServiceWorker waiting: ', registration.waiting);
             })
             .catch(function(err) {
               console.log('ServiceWorker registration failed: ', err);
             });
         });
-      } else {
-        console.log('Service Workers are not supported in this browser');
       }
     </script>
   </body>

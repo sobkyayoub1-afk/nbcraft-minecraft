@@ -2,7 +2,7 @@
   "name": "NBCraft - Minecraft Beta 1.7.3",
   "short_name": "NBCraft",
   "description": "Play Minecraft Beta 1.7.3 in your web browser",
-  "start_url": "/nbcraft.html",
+  "start_url": "./nbcraft.html",
   "display": "standalone",
   "background_color": "#000000",
   "theme_color": "#4CAF50",
