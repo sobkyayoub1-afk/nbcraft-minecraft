@@ -1,0 +1,17 @@
+{
+	"clouds":{
+		"states": [
+			"Blending",
+			"DisableCulling",
+			"Textured",
+			"EnableAlphaTest"
+		],
+		"depthFunc": "LessEqual",
+		
+		"defines": [ "ALPHA_TEST" ],
+
+		"vertexShader" : "shaders/cloud.vertex",
+		"fragmentShader" : "shaders/color_texture.fragment"
+	}
+}
+

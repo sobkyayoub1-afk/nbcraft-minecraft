@@ -1,0 +1,15 @@
+{
+	"clouds":{
+		"states": [
+			"DisableCulling",
+			"Textured",
+			"EnableAlphaTest"
+		],
+	
+		"defines": [ "ALPHA_TEST" ],
+
+		"vertexShader" : "shaders/cloud.vertex",
+		"fragmentShader" : "shaders/color_texture.fragment"
+	}
+}
+
