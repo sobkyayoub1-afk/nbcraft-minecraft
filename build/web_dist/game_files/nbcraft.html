@@ -34,7 +34,7 @@
                 damage: 4, // 4 hearts in survival
                 creativeDamage: 0, // 0 damage in creative
                 speed: 1.2,
-                spawnRate: 0.01, // 1% spawn rate
+                spawnRate: 0.001, // 0.1% spawn rate (much rarer)
                 hostile: true,
                 drops: ['ender_pearl']
             };
@@ -149,12 +149,17 @@
         
         // Auto-spawn system (safe, no WebGL)
         setInterval(() => {
+            // Limit total spawned mobs to prevent spam
+            if (spawnedMobs.length >= 10) {
+                return; // Don't spawn if we already have 10 mobs
+            }
+            
             Object.values(modMobs).forEach(mob => {
-                if (Math.random() < mob.spawnRate) {
+                if (Math.random() < mob.spawnRate && spawnedMobs.length < 10) {
                     spawnMobNearPlayer(mob.name);
                 }
             });
-        }, 10000); // Check every 10 seconds
+        }, 30000); // Check every 30 seconds (reduced frequency)
         
         console.log('NBCraft Safe Mob System Loaded');
         console.log('Commands: /enderman, /spawn [mobname], /mobs, /clear');
