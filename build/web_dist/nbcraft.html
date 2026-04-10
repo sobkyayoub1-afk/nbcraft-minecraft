@@ -1,26 +1,28 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<html lang="en-us">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <title>NBCraft</title>
     <style>
-        body {
-            margin: 0;
-            padding: 0;
-            background-color: #000;
-            overflow: hidden;
-        }
-        canvas {
-            display: block;
-            width: 100vw;
-            height: 100vh;
-        }
+      html, body {
+        background-color: black;
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        overflow: hidden;
+      }
+      canvas {
+        display: block;
+        border: 0px none;
+      }
     </style>
-</head>
-<body>
-    <canvas id="canvas" oncontextmenu="event.preventDefault()"></canvas>
+  </head>
+  <body>
+    <canvas id="canvas" oncontextmenu="event.preventDefault()" tabindex=-1></canvas>
+    <script type="text/javascript" src="coi-serviceworker.min.js"></script>
     
+    <!-- Safe Enderman System -->
     <script>
         // Safe mob system without WebGL interference
         let modMobs = {};
@@ -135,18 +137,6 @@
         // Initialize Enderman
         addEnderman();
         
-        // Module setup for game
-        var Module = {
-            print: function(text) {
-                console.log(text);
-            },
-            printErr: function(text) {
-                console.error(text);
-            },
-            canvas: document.getElementById('canvas'),
-            arguments: [String(window.innerWidth), String(window.innerHeight)]
-        };
-        
         // Auto-spawn system (safe, no WebGL)
         setInterval(() => {
             // Limit total spawned mobs to prevent spam
@@ -166,8 +156,39 @@
         console.log('Press Ctrl+M for command input');
     </script>
     
-    <!-- Game files will be loaded here -->
-    <script src="nbcraft.js"></script>
-    <script src="nbcraft.wasm"></script>
-</body>
+    <script type='text/javascript'>
+      var Module = {
+        print: function (text) {
+          if (arguments.length > 1) text = Array.prototype.slice.call(arguments).join(' ');
+          console.log(text);
+        },
+        printErr: function (text) {
+          if (arguments.length > 1) text = Array.prototype.slice.call(arguments).join(' ');
+          console.error(text);
+        },
+        canvas: (function () {
+          var canvas = document.getElementById('canvas');
+
+          // As a default initial behavior, pop up an alert when webgl context is lost. To make your
+          // application robust, you may want to override this behavior before shipping!
+          // See http://www.khronos.org/registry/webgl/specs/latest/1.0/#5.15.2
+          canvas.addEventListener("webglcontextlost", function(e) { alert('WebGL context lost. You will need to reload the page.'); e.preventDefault(); }, false);
+
+          // Handle Resize
+          function setCanvasSize() {
+            Module.ccall('resize_from_js', null, ['number', 'number'], [window.innerWidth, window.innerHeight]);
+          }
+          window.addEventListener("resize", setCanvasSize);
+
+          return canvas;
+        })(),
+        arguments: [String(window.innerWidth), String(window.innerHeight)],
+        preRun: [function () {
+          const urlParams = new URLSearchParams(window.location.search);
+          ENV.MCPE_INPUT_MODE = urlParams.get('inputMode');
+        }]
+      };
+    </script>
+    <script async type="text/javascript" src="nbcraft.js"></script>
+  </body>
 </html>
