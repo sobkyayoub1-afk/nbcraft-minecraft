@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NBCraft</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #000;
+            overflow: hidden;
+        }
+        canvas {
+            display: block;
+            width: 100vw;
+            height: 100vh;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="canvas" oncontextmenu="event.preventDefault()"></canvas>
+    
+    <script>
+        // Safe mob system without WebGL interference
+        let modMobs = {};
+        let spawnedMobs = [];
+        
+        // Add Enderman safely
+        function addEnderman() {
+            modMobs['Enderman'] = {
+                name: 'Enderman',
+                health: 40,
+                damage: 4, // 4 hearts in survival
+                creativeDamage: 0, // 0 damage in creative
+                speed: 1.2,
+                spawnRate: 0.001, // 0.1% spawn rate (much rarer)
+                hostile: true,
+                drops: ['ender_pearl']
+            };
+            console.log('Enderman added to mob registry');
+        }
+        
+        // Safe spawn function
+        function spawnMobNearPlayer(mobName) {
+            const mob = modMobs[mobName];
+            if (!mob) {
+                console.log('Mob not found:', mobName);
+                return;
+            }
+            
+            // Generate safe spawn coordinates
+            const spawnX = Math.random() * 20 - 10; // Within 10 blocks
+            const spawnY = 64;
+            const spawnZ = Math.random() * 20 - 10;
+            
+            // Add to spawned mobs list (no WebGL interaction)
+            const spawnedMob = {
+                ...mob,
+                x: spawnX,
+                y: spawnY,
+                z: spawnZ,
+                id: Date.now()
+            };
+            
+            spawnedMobs.push(spawnedMob);
+            console.log('Spawned', mobName, 'at', spawnX, spawnY, spawnZ);
+            
+            // Visual feedback (non-WebGL)
+            showSpawnMessage(mobName, spawnX, spawnY, spawnZ);
+        }
+        
+        // Safe spawn message (no WebGL)
+        function showSpawnMessage(mobName, x, y, z) {
+            const message = document.createElement('div');
+            message.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: #4CAF50;
+                color: white;
+                padding: 10px;
+                border-radius: 5px;
+                font-family: monospace;
+                z-index: 1000;
+                opacity: 0;
+                transition: opacity 0.3s;
+            `;
+            message.textContent = `Spawned ${mobName} at (${Math.round(x)}, ${y}, ${Math.round(z)})`;
+            document.body.appendChild(message);
+            
+            // Fade in and out
+            setTimeout(() => message.style.opacity = '1', 10);
+            setTimeout(() => {
+                message.style.opacity = '0';
+                setTimeout(() => document.body.removeChild(message), 300);
+            }, 3000);
+        }
+        
+        // Safe debug command system
+        function handleDebugCommand(command) {
+            const cmd = command.toLowerCase().trim();
+            
+            if (cmd === '/enderman' || cmd === '/spawn enderman') {
+                spawnMobNearPlayer('Enderman');
+            } else if (cmd.startsWith('/spawn ')) {
+                const mobName = cmd.substring(7).trim();
+                spawnMobNearPlayer(mobName);
+            } else if (cmd === '/mobs') {
+                console.log('Available mobs:', Object.keys(modMobs));
+                console.log('Spawned mobs:', spawnedMobs.length);
+            } else if (cmd === '/clear') {
+                spawnedMobs = [];
+                console.log('Cleared all spawned mobs');
+            }
+        }
+        
+        // Keyboard shortcuts (safe)
+        document.addEventListener('keydown', function(e) {
+            // Ctrl+M for debug commands
+            if (e.ctrlKey && e.key === 'm') {
+                e.preventDefault();
+                const command = prompt('Enter debug command (e.g., /enderman, /spawn enderman, /mobs):');
+                if (command) {
+                    handleDebugCommand(command);
+                }
+            }
+        });
+        
+        // Console command system
+        window.spawnMob = spawnMobNearPlayer;
+        window.listMobs = () => Object.keys(modMobs);
+        window.listSpawned = () => spawnedMobs;
+        
+        // Initialize Enderman
+        addEnderman();
+        
+        // Module setup for game
+        var Module = {
+            print: function(text) {
+                console.log(text);
+            },
+            printErr: function(text) {
+                console.error(text);
+            },
+            canvas: document.getElementById('canvas'),
+            arguments: [String(window.innerWidth), String(window.innerHeight)]
+        };
+        
+        // Auto-spawn system (safe, no WebGL)
+        setInterval(() => {
+            // Limit total spawned mobs to prevent spam
+            if (spawnedMobs.length >= 10) {
+                return; // Don't spawn if we already have 10 mobs
+            }
+            
+            Object.values(modMobs).forEach(mob => {
+                if (Math.random() < mob.spawnRate && spawnedMobs.length < 10) {
+                    spawnMobNearPlayer(mob.name);
+                }
+            });
+        }, 30000); // Check every 30 seconds (reduced frequency)
+        
+        console.log('NBCraft Safe Mob System Loaded');
+        console.log('Commands: /enderman, /spawn [mobname], /mobs, /clear');
+        console.log('Press Ctrl+M for command input');
+    </script>
+    
+    <!-- Game files will be loaded here -->
+    <script src="nbcraft.js"></script>
+    <script src="nbcraft.wasm"></script>
+</body>
+</html>
